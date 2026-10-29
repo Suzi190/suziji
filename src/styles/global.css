@@ -1,0 +1,109 @@
+/* ============================================================
+ * 全局样式 / 设计令牌
+ * 尺寸体系：--u = 1 设计像素（设计画布 432 × 958）
+ * 所有组件内的尺寸都写成 calc(var(--u) * N)，实现等比缩放
+ * ============================================================ */
+:root {
+  /* 色彩（取色自 UI 稿：底 #FFDFEA / 玻璃 #FFEFF5 / 内卡 #FFF9FB） */
+  --c-bg: #ffdfea;
+  --c-bg-top: #ffe9f1;
+  --c-bg-bottom: #fbd3e1;
+  --c-glass-1: rgba(255, 255, 255, 0.55);
+  --c-glass-2: rgba(255, 255, 255, 0.72);
+  --c-glass-3: rgba(255, 255, 255, 0.94);
+  --c-line: rgba(255, 255, 255, 0.65);
+  --c-line-soft: rgba(255, 255, 255, 0.42);
+  --c-text: #7c6570;
+  --c-text-soft: rgba(124, 101, 112, 0.62);
+  --c-text-faint: rgba(124, 101, 112, 0.36);
+  --c-text-hero: rgba(255, 255, 255, 0.96);
+  --c-accent: #f7a8be;
+  --c-accent-deep: #e28ca6;
+
+  /* 拖拽中才允许出现的极淡阴影（静态界面无阴影） */
+  --shadow-drag: 0 8px 24px rgba(90, 60, 75, 0.1);
+
+  /* 兜底设计单位，PhoneShell 会按实际宽度覆盖 */
+  --u: 1px;
+
+  /* 桌面图标 / Dock 图标共用的方块尺寸（兜底值；.phone 里会按 --u 重算） */
+  --icon-size: 58px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+  color: var(--c-text);
+  /* PC 端手机框外的环境背景（模糊粉） */
+  background:
+    radial-gradient(120% 80% at 20% 0%, #f7d9e6 0%, transparent 60%),
+    radial-gradient(120% 80% at 85% 100%, #eddcee 0%, transparent 55%), #f6e7ee;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: rgba(247, 168, 190, 0.35);
+}
+
+/* 统一隐藏滚动条，但保留滚动能力 */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 通用磨砂玻璃（磨砂质感靠 backdrop-filter + 白色描边，不用阴影） */
+.glass {
+  background: var(--c-glass-1);
+  backdrop-filter: blur(calc(var(--u) * 18)) saturate(1.15);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 18)) saturate(1.15);
+  border: 1px solid var(--c-line-soft);
+}
+
+.glass-strong {
+  background: var(--c-glass-2);
+  backdrop-filter: blur(calc(var(--u) * 22)) saturate(1.2);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 22)) saturate(1.2);
+  border: 1px solid var(--c-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "vphone",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "虚拟手机桌面沉浸式 AI 聊天应用（PWA）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "icons": "node scripts/gen-icons.mjs"
+  },
+  "dependencies": {
+    "@vueuse/core": "^15.0.0",
+    "pinia": "^4.1.0",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "^1.2.2",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "unocss": "^66.12.0",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}

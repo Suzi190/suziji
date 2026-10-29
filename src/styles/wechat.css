@@ -1,0 +1,454 @@
+/* ============================================================
+ * 微信页共用外观（只在 Wechat 页面加载，类名统一 wx- 前缀）
+ * 目的：四个 Tab 共用同一套头像 / 行 / 卡片 / 输入控件，避免各写一份
+ * ============================================================ */
+
+.wx-screen {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.wx-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ---------------- 头像 ---------------- */
+
+.wx-avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 42);
+  height: calc(var(--u) * 42);
+  border-radius: calc(var(--u) * 13);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  font-size: calc(var(--u) * 15);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.wx-avatar.sm {
+  width: calc(var(--u) * 28);
+  height: calc(var(--u) * 28);
+  border-radius: calc(var(--u) * 9);
+  font-size: calc(var(--u) * 11);
+}
+
+.wx-avatar.xs {
+  width: calc(var(--u) * 26);
+  height: calc(var(--u) * 26);
+  border-radius: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 10.5);
+}
+
+.wx-avatar.lg {
+  width: calc(var(--u) * 58);
+  height: calc(var(--u) * 58);
+  border-radius: calc(var(--u) * 18);
+  font-size: calc(var(--u) * 20);
+}
+
+/* ---------------- 列表行 ---------------- */
+
+.wx-row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  width: 100%;
+  padding: calc(var(--u) * 9) calc(var(--u) * 8);
+  border-radius: calc(var(--u) * 14);
+  text-align: left;
+  transition: background 0.16s ease;
+}
+
+.wx-row:active {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.wx-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: calc(var(--u) * 3);
+}
+
+.wx-top,
+.wx-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 8);
+}
+
+.wx-name {
+  overflow: hidden;
+  font-size: calc(var(--u) * 13.5);
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--c-text);
+}
+
+.wx-preview {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 11.5);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--c-text-soft);
+}
+
+.wx-time {
+  flex: none;
+  font-size: calc(var(--u) * 9.5);
+  color: var(--c-text-faint);
+}
+
+.wx-badge {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+  padding: 0 calc(var(--u) * 4);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 9);
+  color: #fff;
+  background: linear-gradient(135deg, #f7a8be, #e28ca6);
+}
+
+/* ---------------- 卡片 / 分区 ---------------- */
+
+.wx-sec {
+  padding: 0 calc(var(--u) * 14) calc(var(--u) * 12);
+}
+
+.wx-sec-title {
+  margin: 0 0 calc(var(--u) * 6) calc(var(--u) * 4);
+  font-size: calc(var(--u) * 10);
+  font-weight: 500;
+  letter-spacing: calc(var(--u) * 0.8);
+  color: var(--c-text-faint);
+}
+
+.wx-card {
+  overflow: hidden;
+  border-radius: calc(var(--u) * 16);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+/* ---------------- 设置行（带图标 / 值 / 箭头） ---------------- */
+
+.wx-cell {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  width: 100%;
+  padding: calc(var(--u) * 11) calc(var(--u) * 12);
+  text-align: left;
+  font-size: calc(var(--u) * 12.5);
+  color: var(--c-text);
+}
+
+.wx-cell + .wx-cell {
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.wx-cell:active {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.wx-cell-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 26);
+  height: calc(var(--u) * 26);
+  border-radius: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 14);
+  color: var(--c-text-soft);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.wx-cell-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wx-cell-value {
+  flex: none;
+  font-size: calc(var(--u) * 11);
+  color: var(--c-text-faint);
+}
+
+.wx-chevron {
+  flex: none;
+  font-size: calc(var(--u) * 13);
+  color: var(--c-text-faint);
+}
+
+/* ---------------- 表单 ---------------- */
+
+.wx-field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 5);
+  margin-bottom: calc(var(--u) * 12);
+}
+
+.wx-field-label {
+  padding-left: calc(var(--u) * 2);
+  font-size: calc(var(--u) * 10.5);
+  color: var(--c-text-faint);
+}
+
+.wx-input,
+.wx-textarea {
+  width: 100%;
+  padding: calc(var(--u) * 8) calc(var(--u) * 11);
+  border-radius: calc(var(--u) * 12);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: calc(var(--u) * 12.5);
+  line-height: 1.55;
+  color: var(--c-text);
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.wx-input::placeholder,
+.wx-textarea::placeholder {
+  color: var(--c-text-faint);
+}
+
+.wx-textarea {
+  min-height: calc(var(--u) * 88);
+  resize: none;
+}
+
+/* ---------------- 按钮 ---------------- */
+
+.wx-btn {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 5);
+  height: calc(var(--u) * 34);
+  padding: 0 calc(var(--u) * 14);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 12);
+  color: #fff;
+  background: linear-gradient(135deg, #f7a8be, #e28ca6);
+  transition: transform 0.14s ease;
+}
+
+.wx-btn:active {
+  transform: scale(0.96);
+}
+
+.wx-btn.sm {
+  height: calc(var(--u) * 27);
+  padding: 0 calc(var(--u) * 11);
+  font-size: calc(var(--u) * 11);
+}
+
+.wx-btn.ghost {
+  color: #d8879f;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px dashed rgba(226, 140, 166, 0.55);
+}
+
+.wx-btn.danger {
+  color: #c8737f;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(200, 115, 127, 0.42);
+}
+
+.wx-btn.block {
+  width: 100%;
+}
+
+.wx-btn[disabled] {
+  opacity: 0.5;
+  transform: none;
+}
+
+/* ---------------- 空状态 / 提示 ---------------- */
+
+.wx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  margin: 0;
+  padding: calc(var(--u) * 44) calc(var(--u) * 24);
+  font-size: calc(var(--u) * 11.5);
+  line-height: 1.6;
+  text-align: center;
+  color: var(--c-text-faint);
+}
+
+.wx-empty .glyph {
+  font-size: calc(var(--u) * 30);
+  opacity: 0.5;
+}
+
+.wx-note {
+  margin: 0 0 calc(var(--u) * 12);
+  padding: calc(var(--u) * 8) calc(var(--u) * 10);
+  border-radius: calc(var(--u) * 10);
+  font-size: calc(var(--u) * 10.5);
+  line-height: 1.6;
+  color: var(--c-text-soft);
+  background: rgba(247, 168, 190, 0.12);
+}
+
+/* ---------------- 子页头部（返回 + 标题） ---------------- */
+
+.wx-subhead {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  height: calc(var(--u) * 44);
+  padding: 0 calc(var(--u) * 10);
+  border-bottom: 1px solid rgba(124, 101, 112, 0.07);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(calc(var(--u) * 16)) saturate(1.1);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 16)) saturate(1.1);
+}
+
+.wx-back {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 27);
+  height: calc(var(--u) * 27);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 15);
+  color: var(--c-text-soft);
+}
+
+.wx-back:active {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.wx-subtitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 13.5);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--c-text);
+}
+
+/* ---------------- 胶囊选项 / 分段控件 / 开关 ---------------- */
+
+.wx-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--u) * 6);
+}
+
+.wx-chip {
+  padding: calc(var(--u) * 4) calc(var(--u) * 10);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 10.5);
+  color: var(--c-text-soft);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid transparent;
+}
+
+.wx-chip.on {
+  color: #fff;
+  background: linear-gradient(135deg, #f7b8c9, #e28ca6);
+}
+
+.wx-seg {
+  display: flex;
+  gap: calc(var(--u) * 2);
+  padding: calc(var(--u) * 3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.wx-seg button {
+  flex: 1;
+  height: calc(var(--u) * 25);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 11);
+  color: var(--c-text-soft);
+}
+
+.wx-seg button.on {
+  color: #fff;
+  background: linear-gradient(135deg, #f7b8c9, #e28ca6);
+}
+
+.wx-switch {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 36);
+  height: calc(var(--u) * 20);
+  border-radius: 999px;
+  background: rgba(124, 101, 112, 0.16);
+  transition: background 0.18s ease;
+}
+
+.wx-switch::after {
+  position: absolute;
+  top: calc(var(--u) * 2);
+  left: calc(var(--u) * 2);
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+  border-radius: 50%;
+  background: #fff;
+  content: '';
+  transition: transform 0.18s ease;
+}
+
+.wx-switch.on {
+  background: linear-gradient(135deg, #f7a8be, #e28ca6);
+}
+
+.wx-switch.on::after {
+  transform: translateX(calc(var(--u) * 16));
+}
+
+/* ---------------- 轻提示 ---------------- */
+
+.wx-toast {
+  position: absolute;
+  bottom: calc(var(--u) * 74);
+  left: 50%;
+  z-index: 20;
+  max-width: 84%;
+  padding: calc(var(--u) * 7) calc(var(--u) * 13);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 11);
+  text-align: center;
+  color: #fff;
+  background: rgba(70, 52, 62, 0.82);
+  transform: translateX(-50%);
+}
+

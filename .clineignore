@@ -1,0 +1,25 @@
+# 排除出 AI 上下文的文件（语法同 .gitignore）
+# 目的：避免把日志、锁文件、构建产物、二进制图片塞进上下文浪费 token
+
+node_modules/
+dist/
+dev-dist/
+android/
+ios/
+
+# 体积大且无信息量
+package-lock.json
+dev.log
+dev.err
+*.log
+*.pid
+
+# 二进制资源：只需要知道存在，不需要读内容
+public/icons/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.ico
+*.woff
+*.woff2

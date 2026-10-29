@@ -1,0 +1,189 @@
+# 小白 · AI 桌面（vphone）—— AI 开发常驻上下文
+
+> 本文件由 AI 每次开工会话自动加载。**开工先读这里，再按需 grep 定位，只读目标行区间。**
+> 需求原文在 `项目定位与要求说明/`，属于产品契约，已浓缩进第 6 节，**除非要核对细节，不要重读整个 txt**。
+
+## 1. 省 token 铁律
+
+1. 先读本文件 → 再 `search_codebase` 精确定位 → 最后只读目标文件的**指定行区间**。
+2. 禁止"顺手把整个文件 / 整个目录读一遍"。文件 > 200 行时，先 grep 拿行号再读区间。
+3. 不读：`dev.log`、`package-lock.json`、`dist/`、`node_modules/`、`public/icons/`（已由 `.clineignore` 排除）。
+4. 判断够用就停手，不要为了"确认"而重复读取已知内容。
+5. 改完代码**只更新本文件第 5 节的现状记录**（一行一条），不要新建长文档。
+6. **用户是小白**：不要向他要文件路径、行号、"哪部分不能动"；这些由 AI 判断，并按第 8 节输出【改动卡】。
+7. 改中文文件（.md/.vue/.js/.clinerules）**只用编辑器工具写**；禁止 `Get-Content | Set-Content` 之类 PowerShell 管道回写，会吞掉中文与 emoji 字节（已踩过坑）。
+
+## 2. 技术栈（不可更换）
+
+Vue 3.5（`<script setup>`）· Vite 8 · UnoCSS 66（presetWind3 + presetIcons/ph）· Pinia 4 · Vue Router 5 · `@vueuse/core` 15（拖拽/缩放只能用它：useDraggable / useResizable）· vite-plugin-pwa 2 · Capacitor（APK，阶段 4）
+
+- 别名 `@` → `src`；`base: './'`（为 file:// 加载保留）。
+- **禁止**引入 Element Plus / Ant Design 等重型 UI 库，组件自行封装
+- 注释、命名、变量风格一律沿用现有文件（中文块注释 + `---` 分隔线）
+
+## 3. 目录地图（括号内为行数，用于估算读取量）
+
+```
+src/
+├─ apps/registry.js (187)      16 个 App 元信息：id/name/icon/accent/window/phase/desc/load
+│                              + APP_MAP / getApp / DOCK_IDS；icon 类名需同步 uno.config.js safelist
+├─ api/config.js (193)         纯函数：AI_PRESETS / DEFAULT_AI_CONFIG / normalizeConfig /
+│                              normalizeBaseUrl / buildEndpoint(baseUrl, path) / parseCustomHeaders /
+│                              missingFields / isBlankConfig / normalizeProfile；AI_STORAGE_KEY='vphone.ai.v2'
+├─ api/openaiStream.js (428)   SSE 流式请求封装 + listModels（GET /models 拉模型列表）+ describeError
+├─ api/memory.js (317)         记忆总结：buildMemorySystemPrompt（轻重缓急判定规则）/ buildMemoryPayload /
+│                              parseMemoryReply（JSON·```json·「★★★ 句子」兜底）/ summarizeChat
+├─ api/chatPrompt.js (60)      微信「活人感」提示词：buildAlivePrompt(name)——先有此刻/手打感/不做客服/禁旁白
+├─ stores/desktop.js (451)     ★核心状态仓：两页布局（widgets/icons/Dock）、壁纸、系统设置、
+│                              窗口开关/最小化/层级、拖拽落点合法性（交换/挤出重排）
+│                              STORAGE_KEY='vphone.desktop.v1'，LAYOUT_VERSION=3，defaultLayout() 对齐 UI 稿
+├─ stores/memory.js (313)      记忆仓库 vphone.memory.v1：条目 {text,level:3/2/1,kind,when,quote,hits}、
+│                              coveredCount（=原始 messages 下标）、absorb 去重强化（hits≥3 升关键）、
+│                              collect/render 注入、pendingRounds
+├─ stores/aiConfig.js (353)    多配置档案（最多 20 个，AI_MAX_PROFILES），v1→v2 迁移；
+│                              模型列表缓存 modelsMap / modelOptions / loadModels / setModel
+├─ stores/worldbook.js (439)    世界书仓库（字段对齐 SillyTavern）：entries + WB_POSITIONS / WB_SCOPES
+│                              collect({ids,scanText}) → {before,middle,after[{content,depth}],picked}
+│                              folders（全局/局部文件夹：addFolder/renameFolder/toggleFolder/removeFolder）
+│                              存储 'vphone.worldbook.v2'（条目，自动迁 v1）+ 'vphone.worldbook.folders.v1'
+├─ utils/grid.js (97)          CANVAS 432×958、GRID（4 列 × 7 行）、CELL_W/CELL_H/PITCH_X/PITCH_Y、
+│                              cellToRect / rectKeys / buildOccupancy / findConflicts / freeCells / pointToCell
+├─ utils/storage.js (95)       loadJSON / saveJSON（localStorage）+ IndexedDB 图片
+│                              putImage / getImageURL / removeImage / clearAllStorage（DB 'vphone-assets'）
+├─ utils/chatSource.js (73)    只读快照 readChats() / readProfile()：记忆 App 读微信会话用，绝不回写
+├─ utils/bubbles.js (50)       [s]…[/s] 气泡切分：stripBubbleTags（流式剥标签）/ splitBubbles（收完拆多条）
+├─ utils/image.js (33)         newImageKey 等
+├─ utils/wallpapers.js (22)    WALLPAPERS / getWallpaper
+├─ composables/useDragGrid.js (198)  图标长按拖拽 + 网格吸附
+├─ components/
+│  ├─ desktop/  PhoneShell(87) DesktopPage(250) DesktopPages(78) DesktopIcon(91)
+│  │            IconContextMenu(115) DockBar(56) StatusBar(55) Wallpaper(51) PageDots(44)
+│  ├─ window/   AppWindow(199，provide('appNav') 让页面可藏外壳顶栏) WindowLayer(40) MinimizedTray(65)
+│  ├─ widget/   WidgetBox(64) + widgets/{HeroWidget(203) Hero2Widget(99) PillWidget(75) PhotoWidget(64)}
+│  │            + parts/{ImageSlot(150) MiniCalendar(111) EditableText(83)}
+│  ├─ wechat/   ★微信四个 Tab（只被 Wechat.vue 用）
+│  │            ChatList(156) 会话列表 · ChatRoom(639) 聊天详情（气泡/背景层/拉黑条/查找定位）
+│  │            ChatSettings(683) 「⋯」聊天设置抽屉（背景/记忆/时间感知/拉黑/世界书/查找/删除）
+│  │            ChatSearch(222) 聊天记录查找浮层
+│  │            ContactsTab(296) 通讯录/编辑智能体
+│  │            DiscoverTab(280) 发现/朋友圈/公众号 · MeTab(558) 我/人设/表情/气泡/钱包
+│  │            shared.js(97) TONES / toneGradient / uid / timeLabel / stampLabel / momentLabel / DEFAULT_EMOJIS
+│  └─ common/   AppIcon(47) AppPlaceholder(70)
+├─ views/Desktop.vue (24)      首页（Router 默认）
+├─ views/apps/  Settings.vue(1021) 已完成（壁纸/桌面/系统/AI 接口：多配置 + 连通测试 + 拉取模型） · Wechat.vue(788) 微信外壳（底栏四栏 + 落盘 + AI 流式 + 会话设置
+│                              + 记忆注入 + 攒够轮数静默整理记忆）
+│                              WorldBook.vue(1384) 世界书（列表筛选 + 全局/局部文件夹分组 + 条目编辑：范围·前中后·必读·关键词）
+│                              Memory.vue(1073) 记忆（会话列表 · 条目按等级排 · 进度条 · 整理/从头整理 ·
+│                              点星星换档 · 行内改文字 · 删除 · 手动补记）
+│                              其余 12 个均为 6 行占位
+├─ router/index.js (19)  main.js (10)  App.vue (3)
+└─ styles/global.css (95)  styles/wechat.css(452，微信页共用外观 wx- 前缀，随 Wechat 分包加载)
+
+配置文件：uno.config.js(71，含 theme 色板 rose/ink + safelist) · vite.config.js · package.json(脚本)
+文档：项目定位与要求说明/项目说明.txt(181 行，产品契约) · 主页ui/ui设计说明.txt(5 行，两页布局稿)
+      docs/小白改动指南.md ← **给用户看的三层文件分级 + 现成积木清单，动手前必查**
+      文件地图.txt（根目录）← **逐文件夹/逐文件职责 + 「想改X→改哪」速查表 + 存储键位表，找落点先查它**
+```
+
+
+## 4. 设计 / 实现约定
+
+- **设计像素坐标**：画布 432×958，一切 cell / 尺寸都用设计像素存储，渲染时乘 `--u` 换算，保证跨设备一致。
+- **网格**：4 列 × 7 行；第 1 页大组件 4×5（y0~4），图标在 y=5 / y=6；Dock 固定 `DOCK_IDS`。
+- **风格**：透明磨砂玻璃、**无阴影**、低饱和高级感，拒绝花哨卡通；颜色只用 uno theme 的 `rose-50…600` / `ink`。
+- **图标**：Iconify `ph` 集合；凡是运行时拼接的图标类名，必须手动加进 `uno.config.js` 的 `safelist`，否则打包丢失。
+- **持久化**：key 前缀 `vphone.*`；结构化数据走 localStorage，图片走 IndexedDB（取出的 objectURL 由调用方 revoke）。
+- **窗口**：App 目前统一整屏打开，`window.w/h` 仅作兜底；拖动只允许标题栏触发。
+- **AI 接口**：不硬编码任何地址/key/model；OpenAI Chat Completions 兼容 + SSE；错误统一走 `describeError`。
+
+## 5. 当前进度（每次改动请追加一行，勿写长文）
+
+- ✅ 阶段1 骨架：桌面两页布局、壁纸、状态栏、Dock、图标拖拽吸附、小组件（Hero/Hero2/Pill/Photo）、窗口壳、PWA
+- ✅ 设置页完整（AI 多档案配置 + 连通测试 + 拉取模型列表 + 桌面/系统设置），`stores/aiConfig.js` + `api/config.js` + `api/openaiStream.js` 可用
+- ✅ 微信页完整（`Wechat.vue` 583 行外壳 + `components/wechat/` 5 个子页）：
+  底栏四栏「列表 / 通讯录 / 发现 / 我」；列表（搜索/置顶/未读）+ 聊天详情（气泡/时间条/表情/输入栏/流式光标/停止）；
+  通讯录（好友列表 + 添加好友 + 编辑智能体人设/头像色/删除）；发现（朋友圈点赞 + 公众号展示位）；
+  我（我的资料 = user 人设注入 AI / 表情包增删 / 聊天气泡配色·圆角·头像开关 / 微信钱包展示）
+  数据落盘 `vphone.wechat.v2`，首次加载自动迁移 `vphone.wechat.v1` 的聊天记录
+- ✅ 微信聊天设置（`ChatSettings.vue` + `ChatSearch.vue` + `stores/worldbook.js`）：
+  聊天背景（4 预置渐变 + 相册图存 IndexedDB，可按会话）/ 聊天记忆（开关·轮数·自定义提示词；
+  条目由「记忆」App 整理并注入，向量总结仅占位）/ 时间感知（注入「现在是 …」）/ 拉黑好友（输入栏换提示条）/
+  世界书勾选（勾中条目注入 `buildMessages()`）/ 查找聊天记录（浮层搜索 + 点结果跳转高亮）
+- ✅ 世界书 App（`views/apps/WorldBook.vue` + `stores/worldbook.js` v2，参考 SillyTavern）：
+  列表（搜索 / 全部·全局·局部·必读·已停用筛选 / 启用开关 / 「会不会注入」提示）+ 条目编辑（名称·范围·前中后·必读·
+  关键词·全部命中·插入顺序·深度·复制·删除）；微信 `buildMessages()` 按 前/中/后 三段注入（后位按 depth 插进历史）
+- ✅ 记忆 App（`views/apps/Memory.vue` + `api/memory.js` + `stores/memory.js`，落盘 `vphone.memory.v1`）：
+  列表（每会话一条：已记 N 条 / 待整理 / 上次整理）+ 详情（进度条 · 三档计数 ★★★关键/★★重要/★次要 ·
+  手动补记 · 行内改文字 · 点星星换档 · 删除 · 「整理」只读未整理段 / 「从头整理」）+ 微信回完消息攒够 rounds 静默整理；
+  总结提示词专门照顾「char 做过什么、什么时候、user 强调过什么」，并要求模型自己判轻重缓急与等级
+- ⬜ 其余 12 个 App 页面仍是 6 行占位（Memo 优先）
+- ⬜ 世界书待补：ST 的递归扫描（注入内容再触发别的条目）、概率 / sticky / 冷却、分组权重、按 App 单独开关
+- ⬜ 记忆待补：向量总结（语义检索片段）、per-App 开关（现在只有微信在用）、导入导出记忆
+- ⬜ 微信待补：朋友圈发布与公众号正文（现为展示位）、钱包转账/红包、通知未读数联动 `stores/notify.js`
+- ⬜ 缺失模块：`stores/{ai,notify,appData}.js`、`composables/{useDraggableWin,useWidgetDrag,useAISSE,useWorldBookInject,useMemoryInject}.js`、`components/notification/`
+- ⬜ 阶段3/4：论坛/商城/抖音/推特、导入导出、Capacitor + GitHub Actions APK
+
+> 变更记录（倒序，一行一条）：
+> - 2026-10-28 世界书详情页接 `appNav`：`WorldBook.vue` 里 `inject('appNav', null)` + `watch(editing)`，进条目详情自动隐藏外壳「‹ 世界书」顶栏（详情自带 `.edit-head`），`backToList()` / 删除 / 复制返回后自动 `hide(false)` 恢复；`onBeforeUnmount` 兜底还原并清 toast 定时器；只动界面显隐，不碰 store 与存档
+> - 2026-10-28 新增根目录 `文件地图.txt`（约 800 行，纯文档、不动代码）：逐文件夹 + 逐文件职责说明（含 🔴🟡🟢⬜ 分级与行数）+「我想改 X → 改哪个文件」七组速查表 + localStorage / IndexedDB 键位表与删除后果 + 新增 App / 小组件 / store / 提示词 / 存储键的标准动作 + 地基层清单
+> - 2026-10-28 微信加「多气泡」输出：`api/chatPrompt.js` 新增 `FINAL_OUTPUT_RULES`（用户定的最终输出指令：每个气泡 `[s]…[/s]`，标签外不许有字，不写旁白，1~3 条不固定），作为每轮最后一条 system 注入、与「活人感」开关解耦；新增 `src/utils/bubbles.js`（`stripBubbleTags()` 流式剥标签防闪半截、`splitBubbles()` 收完切多条，标签外文字也不丢）；`Wechat.vue` 的 `sendText()` 改为累计 raw → 流式显示剥离版 → 结束时拆成多条同时间戳消息，AI 历史回传时补回 `[s]` 标签以维持格式
+> - 2026-10-28 设置页 AI 接口加「拉取模型」：`api/openaiStream.js` 新增 `listModels(config)`（GET `{BaseURL}/models`，兼容 `data[]`/`models[]`/纯数组三种返回，自动去重排序，404 换成「这个地址没有模型列表，请手动填写」），`buildEndpoint(baseUrl, path)` 支持换路径；`stores/aiConfig.js` 加 `modelsMap/modelOptions/modelsLoading/modelsError` + `loadModels()` / `setModel()`（换地址·密钥·请求头自动作废旧列表）；`Settings.vue` 模型名右侧「拉取模型」按钮 + 可搜索模型胶囊列表，点一下即填；**不改存档结构**
+> - 2026-10-28 微信加「活人感」提示词：新增 `src/api/chatPrompt.js`（`buildAlivePrompt(name)`，从根目录 `聊天提示词.js` 的线上 V1/V2 提炼：先有此刻状态 / 手打感·回得短 / 不做客服 / 绝对不要旁白与 AI 腔 / 好坏手感对照），`Wechat.vue` 的 `buildMessages()` 紧跟 persona 注入，会话新增 `alive`（默认开，旧存档 `normalizeChat` 补），`ChatSettings` 加开关可对比
+> - 2026-10-27 世界书加「文件夹」：`stores/worldbook.js` 新增 `folders`（`vphone.worldbook.folders.v1`）与 `addFolder/renameFolder/toggleFolder/removeFolder`，条目新增 `folderId`（换范围/删文件夹自动松开）；`WorldBook.vue` 在「全局 / 局部」两档按文件夹分组（折叠 · 文件夹内 ＋ 新建 · ⋯ 改名/删除 · 未分组兜底 · 平铺档位显示文件夹小标），编辑页新增「文件夹」选择；注入逻辑 `collect()` 完全不变
+> - 2026-10-27 新增「携带记忆条数」：会话 `memory.injectMax`（0~30，默认 12，旧存档自动补），微信 `buildMessages()` 按它调 `memory.render(id,{max})`，`0` = 只整理不注入（读取用 `??` 不用 `||`）；`ChatSettings` 记忆区加「携带条数」步进器 + 实时说明，`Memory.vue` 进度卡显示「每次带 N 条」，`utils/chatSource.js` 快照同步该字段
+> - 2026-10-27 记忆提示词去「关键词触发」：原来「出现『别/不要/最讨厌』就记成关键」会把「别这样」这类当下情绪记成底线；改成先教「该不该记三问」（过一阵还成立吗 / 下次会不会做错 / 这是关系还是这次聊天）+ 新增「三、不该记的」负例节 + 底线按长期性判定（提过两次以上或「我一直/每次」这类表述）+ 写法要求「写长期事实不写当时那句话」；`parseMemoryReply` 加 `capMinor()` 硬性把 level 1 限到 2 条，`buildMemoryPayload()` 任务句加「宁缺毋滥」
+> - 2026-10-27 实装「记忆」App（传统总结）：`api/memory.js`(317，提示词 + 请求组装 + JSON/星星兜底解析) + `stores/memory.js`(313，`vphone.memory.v1`，level 3/2/1、absorb 去重强化、collect/render) + `Memory.vue`(1073) + `utils/chatSource.js`(73，只读微信快照)；微信 `buildMessages()` 接入 `memory.render()`、回完消息按 rounds 静默 `autoSummarize()`；ChatSettings 记忆区文案改为指向记忆 App
+
+> - 2026-10-27 实装「世界书」App：`WorldBook.vue`(1027) + `stores/worldbook.js` 升 v2（对齐 SillyTavern：scope 全局/局部、position 前中后、constant 必读、keys+requireAll、order、depth），旧 v1 自动迁移（scope 落 local）；微信 `buildMessages()` 改三段注入，聊天设置只列局部条目并标位置/必读
+> - 2026-10-27 微信聊天页加「⋯ 聊天设置」：背景（渐变/相册图）/ 记忆（传统总结 UI，暂不调 AI）/ 时间感知 / 拉黑 / 世界书勾选注入 / 查找聊天记录；新增 `ChatSettings.vue`(635) `ChatSearch.vue`(222) `stores/worldbook.js`(89)，会话新增 bg·memory·timeAware·blocked·worldbooks 字段（旧存档自动补默认值）
+> - 2026-10-27 修微信聊天页双顶栏：`AppWindow` 新增 `provide('appNav')`（默认显示，向后兼容），微信进聊天详情时隐藏外壳「‹ 微信」栏，只留聊天页自己的顶栏
+> - 2026-10-27 微信改四栏骨架：`Wechat.vue` 拆成外壳(583) + `components/wechat/` 5 页 + `styles/wechat.css`；存储升到 `vphone.wechat.v2`（自动迁移 v1 聊天记录），user 人设注入 `buildMessages()`
+> - 2026-10-27 实装 `views/apps/Wechat.vue`（955 行，UI + 流式聊天）；AppWindow 用 v-if 渲染会卸载 App，故会话落盘 `vphone.wechat.v1`
+> - 2026-10-27 新增 `docs/小白改动指南.md`（三层文件分级 + 积木清单）；`.clinerules` 增加【改动卡】硬规则
+> - 2026-10-27 建立 `.clinerules` / `.clineignore`，固化项目索引，减少重复阅读
+
+## 6. 产品契约（浓缩版，来自 项目说明.txt）
+
+- 形态：PWA（可加到桌面）+ Capacitor 打包 APK；**首页永远是桌面**，不用传统聊天页。
+- 交互入口：图标点开 App 窗口 / 通知弹窗 / 桌面小组件；每个 App 独立窗口、独立上下文、互不干扰；可忽略消息、可最小化。
+- 16 个 App：微信、世界书、设置、记忆、商城、书院、论坛、文游、穿越局、抖音、游戏、信息、塔罗、推特、情侣空间、备忘录。
+- 世界书（关键词命中注入）与记忆（标签注入）必须**解耦**，可按 App 单独开关。
+- 桌面所有元素可拖拽 + 网格吸附 + 边界限制 + 位置持久化；长按拖图标、单击打开。
+- 所有布局与业务数据本地持久化，支持导入/导出、清除缓存。
+
+## 7. 命令
+
+```bash
+npm run dev      # vite dev server, 端口 5173（阻塞式，别在自动化里跑）
+npm run build    # 唯一的验证方式，改完代码用它确认没编译错
+npm run preview  # 4173
+npm run icons    # 重新生成 PWA 图标
+```
+
+## 8. 协作节奏 & 【改动卡】硬规则
+
+用户是**编程小白**：他不知道该改哪个文件、哪些不能碰、哪些能复用。
+
+- **绝不向用户索要文件路径、行号、函数名**，也不要让他判断"能不能动"——这些都由 AI 判断。
+- 用户只说出**想要的效果**（甚至只说"太丑了 / 太卡了"），AI 负责定位，必要时反问 1~2 个效果层面的问题。
+- 严格按照 `项目说明.txt` 的阶段顺序推进，**一次只做一件**（一个 App 或一个模块），做完等确认再继续。
+- 遇到选型/布局歧义先提问，不要擅自改架构、接口规范、目录结构。
+
+### 改动卡（动手前必须先输出，3~6 行）
+
+```
+【改动卡】
+要改：<文件 + 大概增删行数>
+新增：<新文件，没有就省略>
+复用：<调用哪些现成积木，不新写>
+不动：<本次明确不碰的文件 / App>
+风险：<🔴/🟡/🟢 + 是否影响已存 localStorage 数据>
+```
+
+**可直接开工**（不必等确认）：纯新增文件、只动 🟡 功能层 / 🟢 外观层、预估 < 100 行且不动已存数据结构。
+**必须先等确认**：要动 🔴 地基层（`stores/desktop.js`、`utils/grid.js`、`apps/registry.js`、`uno.config.js` safelist、`vite.config.js`、`utils/storage.js`）、改动 > 100 行、要改已存数据结构、涉及多个 App。
+
+### 复用铁律
+先查 `docs/小白改动指南.md` 第 3 节的积木清单，**能调用就绝不复制第二份实现**。
+新增导出/新增 store 时，同步把新积木补进该清单（一行即可），保持清单可用。
+

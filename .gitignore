@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+android
+ios
+dev-dist
+*.log
+dev.pid
